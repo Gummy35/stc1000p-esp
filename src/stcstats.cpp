@@ -1,11 +1,3 @@
-// #ifdef ESP8266
-// #include <LittleFS.h>
-// #define _FS LittleFS
-// #else
-// #include <LITTLEFS.h>
-// #define _FS LITTLEFS
-// #endif
-
 #ifdef ESP8266
 #include <LittleFS.h>
 #define _FS LittleFS
@@ -14,10 +6,7 @@
 #include <SPIFFS.h>
 #endif
 
-//#include <TimeLib.h>
-//#include <NtpClientLib.h>
 #include "stcstats.h"
-//#include "mqtt.h"
 #include <ArduinoJson.h>
 #include "Stc1000p.h"
 #include <time.h>
@@ -29,8 +18,8 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 
 const PROGMEM char *ntpServer = "europe.pool.ntp.org";
-const long  gmtOffset_sec = 0;
-const int   daylightOffset_sec = 3600;
+const long gmtOffset_sec = 0;
+const int daylightOffset_sec = 3600;
 
 #define STCSTATS_SETTINGS_FILE "/stcstats.json"
 #define STCSTATS_PROFILES_FILE "/profiles.json"
@@ -50,7 +39,8 @@ Stc1000p stc1000p(16, INPUT_PULLDOWN);
 Stc1000p stc1000p(D0, INPUT_PULLDOWN_16);
 #endif
 
-unsigned long now() {
+unsigned long now()
+{
   return timeClient.getEpochTime();
 }
 
@@ -127,11 +117,8 @@ void probeData()
   bool cooling;
   bool heating;
 
-  bool res = stc1000p.readTemperature(&temp)
-    && stc1000p.readSetpoint(&sp)
-    && stc1000p.readHeating(&heating)
-    && stc1000p.readCooling(&cooling);
-  
+  bool res = stc1000p.readTemperature(&temp) && stc1000p.readSetpoint(&sp) && stc1000p.readHeating(&heating) && stc1000p.readCooling(&cooling);
+
   res = true;
   temp = 20.0F + (float)(random(40) - random(40)) / 10.0F;
   sp = 20.0F;
@@ -238,9 +225,6 @@ void stcstats_loadSettings()
     {
       stcstats_sheetid = tmpData["sheetid"] | "";
       stcstats_sheetname = tmpData["sheetname"] | "";
-      // String spreadsheetId = "AKfycbxJuVv3XHsbBtr3JrG8K5rvpI5CojptM_WhwqYPLe3XtMOsPdkj-xn95A"; //--> spreadsheet script ID
-      // String sheet = "Fermenter1";
-
       Serial.println("sheetid " + stcstats_sheetid);
       Serial.println("sheetname " + stcstats_sheetname);
     }
@@ -419,7 +403,7 @@ bool applyStcProfiles()
         float sp = sps[i].as<float>();
         Serial.print("writeProfileSetpoint " + String(profilenum));
         Serial.print(" " + String(i));
-        Serial.println(" "+ String(sp));
+        Serial.println(" " + String(sp));
         result &= stc1000p.writeProfileSetpoint(profilenum, i, sp);
       }
       for (int i = 0; i < 9; i++)
@@ -427,7 +411,7 @@ bool applyStcProfiles()
         int dh = dhs[i].as<int>();
         Serial.print("writeProfileDuration " + String(profilenum));
         Serial.print(" " + String(i));
-        Serial.println(" "+ String(dh));
+        Serial.println(" " + String(dh));
         result &= stc1000p.writeProfileDuration(profilenum, i, dh);
       }
       profilenum++;
@@ -460,31 +444,32 @@ bool stcstats_applyStcSettings(String data)
   hd = jsonData["hd"].as<int>();
   rp = jsonData["rp"].as<bool>();
   on = jsonData["on"].as<bool>();
- 
-  switch(rn_int) {
-    case 0:
-      rn = Stc1000pRunMode::PR0;
-      break;
-    case 1:
-      rn = Stc1000pRunMode::PR1;
-      break;
-    case 2:
-      rn = Stc1000pRunMode::PR2;
-      break;
-    case 3:
-      rn = Stc1000pRunMode::PR3;
-      break;
-    case 4:
-      rn = Stc1000pRunMode::PR4;
-      break;
-    case 5:
-      rn = Stc1000pRunMode::PR5;
-      break;
-    case 6:
-      rn = Stc1000pRunMode::TH;
-      break;
-    default:
-      res = false;
+
+  switch (rn_int)
+  {
+  case 0:
+    rn = Stc1000pRunMode::PR0;
+    break;
+  case 1:
+    rn = Stc1000pRunMode::PR1;
+    break;
+  case 2:
+    rn = Stc1000pRunMode::PR2;
+    break;
+  case 3:
+    rn = Stc1000pRunMode::PR3;
+    break;
+  case 4:
+    rn = Stc1000pRunMode::PR4;
+    break;
+  case 5:
+    rn = Stc1000pRunMode::PR5;
+    break;
+  case 6:
+    rn = Stc1000pRunMode::TH;
+    break;
+  default:
+    res = false;
   }
 
   res &= stc1000p.writeSetpoint(sp);
@@ -581,7 +566,7 @@ void stcstats_begin()
   // Serial.println(NTP.getLastBootTime());
   // NTP.getTime();
 
-timeClient.begin();
+  timeClient.begin();
   // Set offset time in seconds to adjust for your timezone, for example:
   // GMT +1 = 3600
   // GMT +8 = 28800
@@ -593,8 +578,6 @@ timeClient.begin();
   // NTP.begin("pool.ntp.org", 1, true);
   // NTP.setInterval(60000);
   // delay(500);
-
-
 }
 
 void stcstats_loop()

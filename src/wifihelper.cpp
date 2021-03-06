@@ -198,12 +198,10 @@ void wifi_start()
   else
   {
     Serial.println("Mount succesfull");
-    // STCSTATS.loadHistory();
   }
   delay(50);
 
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-  // put your setup code here, to run once:
   Serial.begin(115200);
 
   drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
