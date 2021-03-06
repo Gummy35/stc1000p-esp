@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html charset="UTF-8">
+
+<head>
+  <meta name="viewport">
+  </meta>
+  <style type="text/css">
+    body {
+      font-family: Verdana, Arial, sans-serif;
+      font-size: 12px;
+    }
+
+    #placeholder {
+      width: 800px;
+      height: 600px;
+      padding: 0px;
+      position: relative;
+    }
+
+    table#configurator tr td:empty {
+      width: 50px;
+    }
+
+    table#configurator tr td {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+  </style>
+  <link rel="stylesheet" href="css/jquery-ui.min.css">
+  </link>
+  <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="js/jquery-ui.min.js"></script>
+  <script src="js/jquery.flot.min.js"></script>
+  <script src="js/jquery.flot.axislabels.js"></script>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.css">
+  </link>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  </link>
+
+  <title>STC 1000+ / ESP8266</title>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <h1>STC 1000+ / ESP8266</h1>
+    <ul class="nav nav-tabs" id="tab">
+      <li class="active"><a href="#tab_mesures" data-toggle="tab">Mesures</a></li>
+      <li><a href="#tab_configuration" data-toggle="tab">Configuration</a></li>
+      <li><a href="#tab_stc1000_config" data-toggle="tab">STC1000 Profiles</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade in active" id="tab_mesures">
+        <h2>STC1000+ / ESP8266</h2>
+        <ul class="nav nav-pills">
+          <li class="active"><a href="#">
+              <div class="span badge pull-right" id="temperature">-</div> Temperature
+            </a></li>
+          <li><a href="#">
+              <div class="span badge pull-right" id="setpoint">-</div> Setpoint;
+            </a></li>
+        </ul><br>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <div class="row panel-title">
+              <div class="col-xs-4 col-md-4">
+                <div id="labelTemp"></div>
+              </div>
+              <div class="col-xs-4 col-md-4">
+                <div id="labelSetpoint"></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel body">
+            <div class="row">
+              <div class="col-xs-6 col-md-6">
+                <div class="div" id="chartTemp" style="width: 100%; height: 300px"></div>
+              </div>
+              <div class="col-xs-6 col-md-6">
+                <div class="div" id="chartSetpoint" style="width: 100%; height: 300px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab_configuration">
+        <h2>Configuration </h2>
+        <div class="row">
+          <div class="col-xs-4 col-md-4">
+            <h4 class="text-left">Google Spreadsheet ID</h4>
+          </div>
+          <div class="col-xs-4 col-md-4">
+            <input type="text" id="sheetid" class="form-control" aria-label="Google Spreadsheet ID"
+              aria-describedby="inputGroup-sizing-default" value="~SHEETID~">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-4 col-md-4">
+            <h4 class="text-left">Sheet Name</h4>
+          </div>
+          <div class="col-xs-4 col-md-4">
+            <input type="text" id="sheetname" class="form-control" aria-label="Sheet name"
+              aria-describedby="inputGroup-sizing-default" value="~SHEETNAME~">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-4 col-md-4">
+          </div>
+          <div class="col-xs-4 col-md-4">
+            <div class="button btn btn-success btn-lg" id="savegooglesheetsettings" type="button">Save settings</div>
+          </div>
+          <div class="col-xs-4 col-md-4">
+            <div class="span" id="savegooglesheetsettings_result"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab_stc1000_config">
+
+        <table id="stc1000p_version_selector_table" style="display: none">
+          <tr>
+            <td valign="top">
+              <input type="radio" name="stc1000p_version" value="">STC-1000+<br>
+            </td>
+          </tr>
+        </table>
+
+        <!--span id="tempscale_selector" class="show_version">
+          <h3>Select temperature scale</h3>
+          <select id="tempscale" name="tempscale">
+            <option value="C" selected>Celsius</option>
+            <option value="F">Fahrenheit</option>
+          </select>
+        </span-->
+
+        <div class="btn-group hidden">
+          <button class="btn btn-default" id="labelTempscale">Temperature unit</button>
+          <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            <li><a class="tempscale-menu-item" href="#" rel="C">Celsius</a></li>
+            <li><a class="tempscale-menu-item" href="#" rel="F">Fahrenheit</a></li>
+          </ul>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-default" id="labelProfile">Profile</button>
+          <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+          <ul class="dropdown-menu">
+            <li><a id="profile-0" class="profile-menu-item" href="#" rel="profile-0">Profile 1</a></li>
+            <li><a id="profile-1" class="profile-menu-item" href="#" rel="profile-1">Profile 2</a></li>
+            <li><a id="profile-2" class="profile-menu-item" href="#" rel="profile-2">Profile 3</a></li>
+            <li><a id="profile-3" class="profile-menu-item" href="#" rel="profile-3">Profile 4</a></li>
+            <li><a id="profile-4" class="profile-menu-item" href="#" rel="profile-4">Profile 5</a></li>
+            <li><a id="profile-5" class="profile-menu-item" href="#" rel="profile-5">Profile 6</a></li>
+          </ul>
+        </div>
+        <span>Profile name :
+          <input type="text" id="profilename" value=""></span>
+        <br />
+        <div class="button btn btn-success btn-lg" id="savestcprofiles" type="button">Save profiles</div>
+        <div class="button btn btn-success btn-lg" id="applystcsettings" type="button">Apply STC settings</div>
+        <div class="span" id="stcsettings_result"></div>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Step 1</th>
+              <th>Step 2</th>
+              <th>Step 3</th>
+              <th>Step 4</th>
+              <th>Step 5</th>
+              <th>Step 6</th>
+              <th>Step 7</th>
+              <th>Step 8</th>
+              <th>Step 9</th>
+              <th>Step 10</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Temp <span class="tscale">[&deg;C]</span></th>
+              <td><input class="temperature recalc" type="text" id="sp0" name="sp0" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 1" /></td>
+              <td><input class="temperature recalc" type="text" id="sp1" name="sp1" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 2" /></td>
+              <td><input class="temperature recalc" type="text" id="sp2" name="sp2" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 3" /></td>
+              <td><input class="temperature recalc" type="text" id="sp3" name="sp3" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 4" /></td>
+              <td><input class="temperature recalc" type="text" id="sp4" name="sp4" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 5" /></td>
+              <td><input class="temperature recalc" type="text" id="sp5" name="sp5" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 6" /></td>
+              <td><input class="temperature recalc" type="text" id="sp6" name="sp6" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 7" /></td>
+              <td><input class="temperature recalc" type="text" id="sp7" name="sp7" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 8" /></td>
+              <td><input class="temperature recalc" type="text" id="sp8" name="sp8" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint 9" /></td>
+              <td><input class="temperature recalc" type="text" id="sp9" name="sp9" maxlength="4" size="4"
+                  autocomplete="off" value="19.0" title="Setpoint F" /></td>
+            </tr>
+            <tr>
+              <th>Time [H]</th>
+              <td><input class="duration recalc" type="text" id="dh0" name="dh0" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 1"></td>
+              <td><input class="duration recalc" type="text" id="dh1" name="dh1" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 2"></td>
+              <td><input class="duration recalc" type="text" id="dh2" name="dh2" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 3"></td>
+              <td><input class="duration recalc" type="text" id="dh3" name="dh3" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 4"></td>
+              <td><input class="duration recalc" type="text" id="dh4" name="dh4" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 5"></td>
+              <td><input class="duration recalc" type="text" id="dh5" name="dh5" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 6"></td>
+              <td><input class="duration recalc" type="text" id="dh6" name="dh6" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 7"></td>
+              <td><input class="duration recalc" type="text" id="dh7" name="dh7" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 8"></td>
+              <td><input class="duration recalc" type="text" id="dh8" name="dh8" maxlength="3" size="4"
+                  autocomplete="off" value="72" title="Duration 9"></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+        <table id="configurator">
+          <tbody>
+            <tr>
+              <td style="width:auto; vertical-align: top; white-space: nowrap;">
+                <div id="placeholder"></div>
+              </td>
+              <td style="width:auto; vertical-align: top; white-space: nowrap;">
+                <table>
+                  <tr>
+                    <td>1 d = 24 h</td>
+                  </tr>
+                  <tr>
+                    <td>2 d = 48 h</td>
+                  </tr>
+                  <tr>
+                    <td>3 d = 72 h</td>
+                  </tr>
+                  <tr>
+                    <td>4 d = 96 h</td>
+                  </tr>
+                  <tr>
+                    <td>5 d = 120 h</td>
+                  </tr>
+                  <tr>
+                    <td>6 d = 144 h</td>
+                  </tr>
+                  <tr>
+                    <td>7 d = 168 h</td>
+                  </tr>
+                  <tr>
+                    <td>8 d = 192 h</td>
+                  </tr>
+                  <tr>
+                    <td>9 d = 216 h</td>
+                  </tr>
+                  <tr>
+                    <td>10 d = 240 h</td>
+                  </tr>
+                  <tr>
+                    <td>11 d = 264 h</td>
+                  </tr>
+                  <tr>
+                    <td>12 d = 288 h</td>
+                  </tr>
+                  <tr>
+                    <td>13 d = 312 h</td>
+                  </tr>
+                  <tr>
+                    <td>14 d = 336 h</td>
+                  </tr>
+                  <tr>
+                    <td>15 d = 360 h</td>
+                  </tr>
+                  <tr>
+                    <td>16 d = 384 h</td>
+                  </tr>
+                  <tr>
+                    <td>17 d = 408 h</td>
+                  </tr>
+                  <tr>
+                    <td>18 d = 432 h</td>
+                  </tr>
+                  <tr>
+                    <td>19 d = 456 h</td>
+                  </tr>
+                  <tr>
+                    <td>20 d = 480 h</td>
+                  </tr>
+                </table>
+              </td>
+              <td valign="top" style="width:max-content; vertical-align: top; white-space: nowrap;">
+                <div class="form-group row">
+                  <label class="col-md-6 col-form-label">Run mode :</label>
+                  <div class="btn-group col-md-8">
+                    <button class="btn btn-default" id="labelRunmode">Loading...</button>
+                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span
+                        class="caret"></span></button>
+                    <ul class="dropdown-menu">
+                      <li><a id="runmode-0" class="runmode-menu-item" href="#" rel="runmode-0">Profile 1</a></li>
+                      <li><a id="runmode-1" class="runmode-menu-item" href="#" rel="runmode-1">Profile 2</a></li>
+                      <li><a id="runmode-2" class="runmode-menu-item" href="#" rel="runmode-2">Profile 3</a></li>
+                      <li><a id="runmode-3" class="runmode-menu-item" href="#" rel="runmode-3">Profile 4</a></li>
+                      <li><a id="runmode-4" class="runmode-menu-item" href="#" rel="runmode-4">Profile 5</a></li>
+                      <li><a id="runmode-5" class="runmode-menu-item" href="#" rel="runmode-5">Profile 6</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_SP" class="col-md-8 col-form-label">Setpoint <span
+                      class="tscale">[&deg;C]</span>:</label>
+                  <div class="col-md-4">
+                    <input class="form-control-plaintext" type="text" id="menu_param_SP" name="menu_param_SP"
+                      maxlength="4" size="4" autocomplete="off" value="0.0" title="Setpoint">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_hy" class="col-md-8 col-form-label">Hysteresis <span
+                      class="tscale">[&deg;C]</span>:</label>
+                  <div class="col-md-4">
+                    <input class="form-control-plaintext" type="text" id="menu_param_hy" name="menu_param_hy"
+                      maxlength="4" size="4" autocomplete="off" value="0.0" title="Hysteresis">
+                  </div>
+
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_tc" class="col-md-8 col-form-label">Correction <span
+                      class="tscale">[&deg;C]</span>:</label>
+                  <div class="col-md-4">
+                    <input class="form-control-plaintext" type="text" id="menu_param_tc" name="menu_param_tc"
+                      maxlength="4" size="4" autocomplete="off" value="0.0" title="Temperature correction">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_SA" class="col-md-8 col-form-label">SP Alarm <span
+                      class="tscale">[&deg;C]</span>:</label>
+                  <div class="col-md-4">
+                    <input class="form-control-plaintext" type="text" id="menu_param_SA" name="menu_param_SA"
+                      maxlength="4" size="4" autocomplete="off" value="0.0" title="Setpoint Alarm">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_St" class="col-md-8 col-form-label">Profile step :</label>
+                  <div class="col-md-4">
+                    <input class="form-control-plaintext" type="text" id="menu_param_St" name="menu_param_St"
+                      maxlength="1" size="4" autocomplete="off" value="0" title="Running profile step number">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_dh" class="col-md-8 col-form-label">Step duration [H]:</label>
+                  <div class="col-md-4">
+                    <input class="form-control-plaintext" type="text" id="menu_param_dh" name="menu_param_dh"
+                      maxlength="3" size="4" autocomplete="off" value="0" title="Running profile duration">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_cd" class="col-md-8 col-form-label">Cooling delay [min]:</label>
+                  <div class="col-md-4">
+                    <input class="form-control-plaintext" type="text" id="menu_param_cd" name="menu_param_cd"
+                      maxlength="2" size="4" autocomplete="off" value="0" title="Cooling delay">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_hd" class="col-md-8 col-form-label">Heating delay [min]:</label>
+                  <div class="col-md-4">
+                    <input class="form-control-plaintext" type="text" id="menu_param_hd" name="menu_param_hd"
+                      maxlength="2" size="4" autocomplete="off" value="0" title="Heating delay">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_rP" class="col-md-8 col-form-label">Use ramping:</label>
+                  <div class="col-md-4">
+                    <input type="checkbox" class="recalc" id="menu_param_rP" name="menu_param_rP" data-toggle="toggle"
+                      title="Ramping enabled">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="menu_param_on" class="col-md-8 col-form-label">On / Off (Soft)</label>
+                  <div class="col-md-4">
+                    <input type="checkbox" class="" id="menu_param_on" name="menu_param_on" data-toggle="toggle"
+                      checked="checked" title="On / Off">
+                    </label>
+                  </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!--script(src='js/script.js')-->
+  <script>
+    // var Timer_UpdateMesures;
+    var tab_pane;
+    var supports_storage = supports_html5_storage();
+    var currentTempscale = "C";
+    var currentprofile = 0;
+    var currentrunmode = 0;
+    var profiles = [
+      { 'sp': [0, 0, 0, 0, 0, 0, 0, 0, 0], 'dh': [0, 0, 0, 0, 0, 0, 0, 0], 'name': "Profile 1" },
+      { 'sp': [0, 0, 0, 0, 0, 0, 0, 0, 0], 'dh': [0, 0, 0, 0, 0, 0, 0, 0], 'name': "Profile 2" },
+      { 'sp': [0, 0, 0, 0, 0, 0, 0, 0, 0], 'dh': [0, 0, 0, 0, 0, 0, 0, 0], 'name': "Profile 3" },
+      { 'sp': [0, 0, 0, 0, 0, 0, 0, 0, 0], 'dh': [0, 0, 0, 0, 0, 0, 0, 0], 'name': "Profile 4" },
+      { 'sp': [0, 0, 0, 0, 0, 0, 0, 0, 0], 'dh': [0, 0, 0, 0, 0, 0, 0, 0], 'name': "Profile 5" },
+      { 'sp': [0, 0, 0, 0, 0, 0, 0, 0, 0], 'dh': [0, 0, 0, 0, 0, 0, 0, 0], 'name': "Profile 6" },
+    ];
+
+    console.log(profiles);
+
+    function drawChart() {
+      // https://developers.google.com/chart/interactive/docs/reference?csw=1#datatable-class
+      var options1 = {
+        title: 'Temperature and Setpoint',
+        legend: 'bottom',
+        series: {
+          // Gives each series an axis name that matches the Y-axis below.
+          0: { axis: 'temperature' },
+          1: { axis: 'setpoint' }
+        },
+        axes: {
+          // Adds labels to each axis; they don't have to match the axis names.
+          y: {
+            temperature: { label: 'Temperature (°C)' },
+            setpoint: { label: 'Setpoint (°C)' }
+          }
+        }
+      }
+   
+      var chartTemp = new google.visualization.AreaChart(document.getElementById('chartTemp'));
+      dataChartTemp = new google.visualization.DataTable();
+   
+      // Line chart temp/setpoint
+      dataChartTemp.addColumn('timeofday', 'Time');
+      dataChartTemp.addColumn('number', 'Temperature');
+      dataChartTemp.addColumn('number', 'Setpoint');
+
+      updateGraphs();
+      setInterval(updateGraphs, 10000); //60000 MS == 1 minutes
+
+      function updateGraphs() {
+        $.getJSON('/graph_temp.json', function (json) {
+          var _dataT = [];
+          var t, sp;
+
+          // Data line chart  
+          for (var i = 0; i < json.timestamp.length; i++) {
+            var d = new Date(json.timestamp[i] * 1000);
+            t = json.t[i];
+            sp = json.sp[i];
+            _dataT.push(
+              [
+                [d.getHours(), d.getMinutes(), d.getSeconds()],
+                t,
+                sp
+              ]
+            )
+          }
+      
+          dataChartTemp.addRows(_dataT);
+      
+          // Efface les anciennes valeurs - Erase old data
+          var nbRec = dataChartTemp.getNumberOfRows() - json.timestamp.length;
+          if (dataChartTemp.getNumberOfRows() > json.timestamp.length) {
+            dataChartTemp.removeRows(0, nbRec);
+          }
+          chartTemp.draw(dataChartTemp, options1);
+          $('#temperature').html(t);
+          $('#setpoint').html(sp);
+        }).fail(function (err) {
+          console.log("err getJSON graph_temp.json " + JSON.stringify(err));
+        });
+      }
+    }
+
+
+    $('a[data-toggle=\"tab\"]').on('shown.bs.tab', function (e) {
+      tab_pane = $(e.target).attr("href")
+      console.log('activated ' + tab_pane);
+
+      // IE10, Firefox, Chrome, etc.
+      if (history.pushState)
+        window.history.pushState(null, null, tab_pane);
+      else
+        window.location.hash = tab_pane;
+
+    });
+
+    function getProfiles() {
+      $.getJSON('/getprofiles', function (data) {
+        profiles = data;
+        for (i = 0; i < 6; i++) {
+          $("#profile-" + i).text(profiles[i]["name"]);
+          $("#runmode-" + i).text(profiles[i]["name"]);
+        }
+        set_profile(currentprofile);
+      }).fail(function (err) {
+        console.log("err getJSON getprofiles " + JSON.stringify(err));
+      });
+    };
+
+    function getStcSettings() {
+      $.getJSON('/getstcsettings', function (data) {
+        currentrunmode = parseInt(data.mode, 10);
+        set_runmode(currentrunmode);
+        $("#menu_param_SP").val(data.sp);
+        $("#menu_param_hy").val(data.hy);
+        $("#menu_param_tc").val(data.tc);
+        $("#menu_param_SA").val(data.sa);
+        $("#menu_param_St").val(data.st);
+        $("#menu_param_dh").val(data.dh);
+        $("#menu_param_cd").val(data.cd);
+        $("#menu_param_hd").val(data.hd);
+        $("#menu_param_rP").val(data.rp);
+        $("#menu_param_on").val(data.on);
+      }).fail(function (err) {
+        console.log("err getJSON getprofiles " + JSON.stringify(err));
+      });
+    };
+
+    function updateProfileName(profile, profilename) {
+      $("#profile-" + profile).text(profilename);
+      $("#runmode-" + profile).text(profilename);
+      profiles[profile]["name"] = profilename;
+      if (profile == currentprofile) {
+        $('#labelProfile').html("Profile: " + profilename);
+      }
+      if (profile == currentrunmode) {
+        $('#labelRunmode').html(profilename);
+      }
+    }
+
+    function labelFormatter(value, row) {
+      var label = "";
+      if (value === "Temperature") {
+        label = value + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
+        $("#labelTemp").html("&nbsp;" + value + "&nbsp;" + "<span class='badge'> " + row.valeur + row.unite + "</span><span class='glyphicon " + row.glyph + " pull-left'></span>");
+      } else if (value === "Setpoint") {
+        label = value + "<span class='glyphicon " + row.glyph + " pull-left'></span>";
+        $("#labelSetpoint").html("&nbsp;" + value + "&nbsp;" + "<span class='badge'> " + row.valeur + row.unite + "</span><span class='glyphicon " + row.glyph + " pull-left'></span>");
+      } else {
+        label = value;
+      }
+      return label;
+    }
+    function valueFormatter(value, row) {
+      //console.log("valueFormatter");
+      var label = "";
+      if (row.valeur > row.precedente) {
+        label = value + row.unite + "<span class='glyphicon glyphicon-chevron-up pull-right'></span>";
+      } else {
+        label = value + row.unite + "<span class='glyphicon glyphicon-chevron-down pull-right'></span>";
+      }
+      return label;
+    }
+    function vpFormatter(value, row) {
+      //console.log("valueFormatter");
+      var label = "";
+      if (row.valeur > row.precedente) {
+        label = value + row.unite
+      } else {
+        label = value + row.unite
+      }
+      return label;
+    }
+
+    $('#savegooglesheetsettings').click(function () { saveGooglesheetSettings(); });
+    function saveGooglesheetSettings() {
+      var sheetid = $("#sheetid").val();
+      var sheetname = $("#sheetname").val();
+      $.post("savesettings?sheetid=" + sheetid + "&sheetname=" + sheetname).done(function (data) {
+        //console.log("Retour setBouton " + JSON.stringify(data)); 
+        //console.log(data);
+        if (data.success === "1" | data.success === 1) {
+          $("#savegooglesheetsettings_result").html("Saved");
+        } else {
+          $("#savegooglesheetsettings_result").html("Error");
+        }
+      }).fail(function (err) {
+        console.log("err setButton " + JSON.stringify(err));
+      });
+    }
+
+    $('#savestcprofiles').click(function () { saveStcProfiles(); });
+    function saveStcProfiles() {
+      $.ajax({
+        url: '/saveprofiles',
+        type: 'post',
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (data) {
+          if (data.success === "1" | data.success === 1) {
+            $("#stcsettings_result").html("Profiles Saved");
+          } else {
+            $("#stcsettings_result").html("Error");
+          }
+        },
+        fail: function (err) {
+          console.log("err setButton " + JSON.stringify(err));
+        },
+        data: JSON.stringify(profiles)
+      });
+    }
+
+    $('#applystcsettings').click(function () { applyStcSettings(); });
+    function applyStcSettings() {
+      data = {
+        'rn': currentrunmode,
+        'sp': Math.round($("#menu_param_SP").val() * 10.0) / 10.0,
+        'hy': Math.round($("#menu_param_hy").val() * 10.0) / 10.0,
+        'tc': Math.round($("#menu_param_tc").val() * 10.0) / 10.0,
+        'sa': Math.round($("#menu_param_SA").val() * 10.0) / 10.0,
+        'st': Math.round($("#menu_param_St").val()),
+        'dh': Math.round($("#menu_param_dh").val()),
+        'cd': Math.round($("#menu_param_cd").val()),
+        'hd': Math.round($("#menu_param_hd").val()),
+        'rp': $('#menu_param_rP').is(':checked'),
+        'on': $('#menu_param_on').is(':checked')
+      };
+      $.ajax({
+        url: '/applystcsettings',
+        type: 'post',
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (data) {
+          if (data.success === "1" | data.success === 1) {
+            $("#stcsettings_result").html("Configuration Applied");
+          } else {
+            $("#stcsettings_result").html("Error");
+          }
+        },
+        fail: function (err) {
+          console.log("err setButton " + JSON.stringify(err));
+        },
+        data: JSON.stringify(profiles)
+      });
+    }
+
+    jQuery(function ($) {
+      $('body').on('click', '.tempscale-menu-item', function () {
+        var tempscale = $(this).attr('rel');
+        update_temperature_scale(tempscale);
+      });
+      $('body').on('click', '.profile-menu-item', function () {
+        currentprofile = $(this).attr('rel');
+        currentprofile = currentprofile.replace("profile-", "");
+        currentprofile = parseInt(currentprofile, 10);
+        set_profile(currentprofile);
+      });
+      $('body').on('click', '.runmode-menu-item', function () {
+        currentrunmode = $(this).attr('rel');
+        currentrunmode = currentrunmode.replace("runmode-", "");
+        currentrunmode = parseInt(currentrunmode, 10);
+        set_runmode(currentrunmode);
+      });
+    });
+
+    function supports_html5_storage() {
+      try {
+        return 'localStorage' in window && window['localStorage'] !== null;
+      } catch (e) {
+        return false;
+      }
+    }
+
+
+    function ramp(step, dur) {
+      var t = (dur << 6);
+      var sp = 32;
+      var i;
+      var profile_step_dur = $('#dh' + step).val();
+      var profile_step_sp = Math.round($('#sp' + step).val() * 10.0);
+      step++;
+      var profile_next_step_sp = Math.round($('#sp' + step).val() * 10.0);
+
+      // Linear interpolation calculation of new setpoint (64 substeps)
+      for (i = 0; i < 64; i++) {
+        if (t >= profile_step_dur) {
+          t -= profile_step_dur;
+          sp += profile_next_step_sp;
+        } else {
+          sp += profile_step_sp;
+        }
+      }
+      sp >>= 6;
+
+      return (sp / 10.0);
+    }
+
+    function calc() {
+      var i, j;
+      for (i = 0; i < 9; i++) {
+        profiles[currentprofile]["sp"][i] = $('#sp' + i).val();
+        profiles[currentprofile]["dh"][i] = $('#dh' + i).val();
+      }
+      profiles[currentprofile]["sp"][9] = $('#sp9').val();
+
+      var x = 0;
+      var y = Math.round($('#sp' + 0).val() * 10) / 10.0;
+      var plotdata = [];
+      var xmax = 0;
+
+      for (i = 0; i < 9; i++) {
+        var dh = Math.round($('#dh' + i).val());
+        if (dh === 0) {
+          break;
+        }
+        xmax += dh;
+      }
+
+      var unit = "Hours";
+      var divisor = 1.0;
+      if (xmax >= (24 * 7 * 2)) { // 2 weeks or more?
+        unit = "Weeks";
+        divisor = (7 * 24.0);
+      } else if (xmax >= (24 * 2)) { // 2 d or more?
+        unit = "Days";
+        divisor = 24.0;
+      }
+
+      for (i = 0; i < 9; i++) {
+        var d1 = [];
+        var dh = $('#dh' + i).val();
+        y = Math.round($('#sp' + i).val() * 10.0) / 10.0;
+        d1.push([x / divisor, y]);
+        if (dh == 0) {
+          break;
+        }
+        for (j = 0; j < dh; j++) {
+          if ($('#menu_param_rP').is(':checked')) {
+            d1.push([x / divisor, y]);
+            y = ramp(i, j);
+            d1.push([x / divisor, y]);
+          }
+          x++;
+        }
+        d1.push([x / divisor, y]);
+        y = Math.round($('#sp' + (i + 1)).val() * 10.0) / 10.0;
+        d1.push([x / divisor, y]);
+        plotdata.push({ label: "Profile step: " + i, data: d1 });
+      }
+
+      var d2 = [];
+      d2.push([x / divisor, y]);
+      d2.push([(x + x / 8) / divisor, y]);
+      plotdata.push({ label: "Thermostat", data: d2 });
+
+      $.plot(
+        $("#placeholder"),
+        plotdata,
+        {
+          series: {
+            points: { show: false },
+            lines: { show: true }
+          },
+          axisLabels: {
+            show: true
+          },
+          xaxes: [{
+            axisLabel: unit,
+            tickFormatter: function (val, axis) { return val.toFixed(1); }
+          }],
+          yaxes: [{
+            position: 'left',
+            axisLabel: 'Temperature',
+            axisLabelPadding: 8,
+            tickFormatter: function (val, axis) { return val.toFixed(2); }
+          }]
+
+        }
+      );
+
+    }
+
+    function update_temperature_scale(tempscale) {
+      $('#labelTempscale').html("Temperature unit : &deg;" + tempscale);
+      if (supports_storage) {
+        // Enregistre le theme sélectionné en local - save into the local database the selected theme
+        localStorage.tempscale = tempscale;
+      }
+      if (currentTempscale != tempscale) {
+        currentTempscale = tempscale;
+        if (tempscale == "C") {
+          $("span.tscale").html("[&deg;C]");
+          $("span.tscalename").html("Celsius");
+          $(".temperature").each(function () {
+            var t = $(this).val();
+            $(this).val((Math.round(((t - 32.0) * 5.0) / 0.9) / 10.0).toFixed(1));
+          });
+          $(".tempdiff").each(function () {
+            var t = $(this).val();
+            $(this).val(Math.round(t * 0.5).toFixed(1));
+          });
+
+        } else {
+          $("span.tscale").html("[&deg;F]");
+          $("span.tscalename").html("Fahrenheit");
+          $(".temperature").each(function () {
+            var t = $(this).val();
+            $(this).val((Math.round(((t * 9.0) / 0.5) + 320.0) / 10.0).toFixed(1));
+          });
+          $(".tempdiff").each(function () {
+            var t = $(this).val();
+            $(this).val(Math.round(t * 2.0).toFixed(1));
+          });
+        }
+      }
+      calc();
+    }
+
+    function update_duration_scale() {
+      $("span.durscale").html("[h]");
+      calc();
+    }
+
+    function set_profile(profile) {
+      if (supports_storage) {
+        // Enregistre le theme sélectionné en local - save into the local database the selected theme
+        localStorage.currentprofile = profile;
+      }
+      for (i = 0; i < 9; i++) {
+        $('#dh' + i).val(profiles[currentprofile]["dh"][i]);
+        $('#sp' + i).val(profiles[currentprofile]["sp"][i]);
+      }
+      $('#sp9').val(profiles[currentprofile]["sp"][9]);
+      $('#labelProfile').html("Profile: " + profiles[currentprofile]["name"]);
+      $("#profilename").val(profiles[currentprofile]["name"]);
+      calc();
+    }
+
+    function set_runmode(runmode) {
+      $('#labelRunmode').html($('#runmode-' + currentrunmode).text());
+    }
+
+    function dec2hex(decv) {
+      var hexstr = "0x";
+      if (decv < 16) {
+        hexstr += "0";
+      }
+      return hexstr + Number(decv & 0xFF).toString(16).toUpperCase();
+    }
+
+    $(document).ready(function () {
+      var tempscale = 'C';
+      currentprofile = 0;
+      currentrunmode = 0;
+      if (supports_storage) {
+        tempscale = localStorage.tempscale;
+        currentprofile = localStorage.currentprofile;
+      }
+      if (tempscale == undefined) {
+        tempscale = 'C';
+      }
+      if (currentprofile == undefined) {
+        currentprofile = 0;
+      }
+      currentprofile = parseInt(currentprofile);
+      
+      console.log("currentprofile " + currentprofile);
+      console.log("tempscale " + tempscale);
+      
+      if (tempscale) {
+        update_temperature_scale(tempscale);
+      }
+
+      $(".recalc").change(function () {
+        calc();
+      });
+
+      $("#profilename").change(function () {
+        updateProfileName(currentprofile, $("#profilename").val());
+      });
+
+      update_duration_scale();
+      
+      getProfiles();
+      getStcSettings();
+      
+      google.charts.load('current', {
+        packages: [
+          'corechart',
+          'line',
+          //  'bar', 'gauge'
+        ]
+      });
+      google.charts.setOnLoadCallback(drawChart);
+    });
+  </script>
+</body>
+
+</html>
